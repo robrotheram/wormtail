@@ -1,2 +1,6 @@
 .pnpm-store
 node_modules
+
+__debug*
+config.yaml
+wormtail
