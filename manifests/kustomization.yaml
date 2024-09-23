@@ -6,6 +6,6 @@ resources:
 images:
 - name: app-image
   newName: ghcr.io/robrotheram/wormtail
-  newTag: sha-b103dc9
+  newTag: sha-30bb4ca
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
