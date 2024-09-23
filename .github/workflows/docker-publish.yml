@@ -66,27 +66,28 @@ jobs:
       #     subject-digest: ${{ steps.push.outputs.digest }}
       #     push-to-registry: true
       
-  # update-manifest:
-  #   name: "Update Manifests"
-  #   needs: "build-and-push-image"
-  #   runs-on: "ubuntu-latest"
-  #   permissions:
-  #     contents: write
-  #     packages: write
-  #     attestations: write
-  #     id-token: write
-  #   steps:
-  #     - name: "Git checkout"
-  #       uses: "actions/checkout@v2"
+  update-manifest:
+    name: "Update Manifests"
+    needs: "build-and-push-image"
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: write
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - name: "Git checkout"
+        uses: "actions/checkout@v2"
 
-  #     - name: "Update Deployment Image Tag" # [3]
-  #       working-directory: "manifests"
-  #       run: |
-  #         kustomize edit set image app-image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}:${{ github.sha }}
+      - name: "Update Deployment Image Tag" # [3]
+        working-directory: "manifests"
+        run: |
+          kustomize edit set image app-image=${{steps.meta.outputs.tags}}
+          
 
-  #     - name: "Push Updated Image Tag" # [4]
-  #       run: |
-  #         git config --global user.name "@gjensidige-bot"
-  #         git config --global user.email "gjensidige-bot@users.noreply.github.com"
-  #         git commit -am "feat: Update deployment image tag to ${{ github.sha }} [skip ci]"
-  #         git push
+      - name: "Push Updated Image Tag" # [4]
+        run: |
+          git config --global user.name "@gjensidige-bot"
+          git config --global user.email "gjensidige-bot@users.noreply.github.com"
+          git commit -am "feat: Update deployment image tag to ${{ github.sha }} [skip ci]"
+          git push
