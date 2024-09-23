@@ -47,7 +47,12 @@ type Config struct {
 }
 
 func LoadConfig() Config {
-	data, err := os.ReadFile("config.yaml")
+	configPath := os.Getenv("CONFIG_PATH")
+	if len(configPath) == 0 {
+		configPath = "config.yaml"
+	}
+
+	data, err := os.ReadFile(configPath)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
