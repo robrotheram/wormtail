@@ -18,6 +18,7 @@ const (
 
 type RouteConfig struct {
 	Id      string    `yaml:"id,omitempty"`
+	Enabled bool      `yaml:"enabled,omitempty"`
 	Name    string    `yaml:"name"`
 	Type    RouteType `yaml:"type"`
 	Port    int       `yaml:"port,omitempty"`

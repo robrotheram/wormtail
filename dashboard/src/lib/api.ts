@@ -18,6 +18,7 @@ export interface ProxyStats {
 export interface Route {
     Id: string;
     Name: string;
+    Enabled: boolean;
     Type: RouterType;
     Port: number;
     Status: RouterStatus;
@@ -65,6 +66,7 @@ export interface LoginToken {
 export const defaultRoute = {
     Id: "",
     Name: "",
+    Enabled: true,
     Type: RouterType.HTTP,
     Machine: {
         Address: "127.0.0.1",
@@ -87,7 +89,7 @@ export const token = {
     remove: () => sessionStorage.removeItem('token')
 }
 
-const BASE_URL = ""
+const BASE_URL = "http://localhost:8081"
 const API_URL = `${BASE_URL}/api`
 const AUTH_URL = `${BASE_URL}/auth`
 

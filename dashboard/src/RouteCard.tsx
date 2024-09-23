@@ -9,6 +9,7 @@ import { useState } from 'react'
 import { Input } from './components/ui/input'
 import { Label } from './components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select'
+import { Switch } from './components/ui/switch'
 
 
 export type RouteCardProps = {
@@ -18,7 +19,7 @@ export const RouteDetailCard = ({ route }: RouteCardProps) => {
   const create = route === undefined
 
   const [editMode, setEditMode] = useState(create)
-  const [editedRoute, setEditedRoute] = useState<Route>(route||defaultRoute)
+  const [editedRoute, setEditedRoute] = useState<Route>(route || defaultRoute)
   const queryClient = useQueryClient()
   const navigate = useNavigate({ from: create ? `/` : `/routes/${route.Id}` })
   const update = useMutation({
@@ -55,6 +56,10 @@ export const RouteDetailCard = ({ route }: RouteCardProps) => {
     }))
   }
 
+  const handleEnabled = (value:boolean) => {
+    setEditedRoute((prevRoute) => ({...prevRoute, Enabled: value}))
+  }
+
   const handleSelectChange = (value: string) => {
     setEditedRoute((prevRoute) => ({
       ...prevRoute,
@@ -85,7 +90,7 @@ export const RouteDetailCard = ({ route }: RouteCardProps) => {
             : 'View firewall route details'}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="space-y-4">
         {editMode && (
           <div>
             <Label htmlFor="name">Route Name</Label>
@@ -139,6 +144,14 @@ export const RouteDetailCard = ({ route }: RouteCardProps) => {
               <SelectItem value={RouterType.UDP}>{RouterType.UDP}</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+        <div className='flex items-center gap-2'>
+          <Label htmlFor="Hostname">Enabled: </Label>
+          <Switch
+            checked={editMode ? editedRoute.Enabled : route?.Enabled}
+            onCheckedChange={handleEnabled}
+            disabled={!editMode}
+          />
         </div>
 
         {editedRoute.Type === RouterType.TCP && (

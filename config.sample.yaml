@@ -8,11 +8,13 @@ dashboard:
 routes:
 - name: example.domain.com
   type: http
+  enabled: true
   machine:
     address: 192.168.0.104
     port: 30013
 - name: example tcp example
   type: tcp
+  enabled: false
   port: 8080
   machine:
     address: 192.168.0.104

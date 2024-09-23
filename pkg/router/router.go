@@ -43,16 +43,25 @@ func NewRouter(config utils.Config) (*Router, error) {
 		routes: make(map[string]Route),
 		wg:     sync.WaitGroup{},
 	}
-	s := new(tsnet.Server)
-	s.Hostname = config.Tailscale.Hostname
-	router.ts = s
+	router.UpdateTailScale(config.Tailscale)
 	for _, route := range config.Routes {
 		router.AddRoute(route)
 	}
+	router.StartAll()
 	return router, nil
 }
 
+func (r *Router) UpdateTailScale(config utils.TailscaleConfig) {
+	if r.ts != nil {
+		r.Close()
+	}
+	r.ts = new(tsnet.Server)
+	r.ts.AuthKey = config.APIKey
+	r.ts.Hostname = config.Hostname
+}
+
 func (r *Router) Close() {
+	r.StopAll()
 	r.ts.Close()
 }
 
@@ -131,6 +140,9 @@ func (r *Router) GetAll() []RouteInfo {
 }
 
 func (r *Router) StartRoute(name string) {
+	if !r.routes[name].Config().Enabled {
+		return
+	}
 	r.wg.Add(1)
 	go func() {
 		defer r.wg.Done()
@@ -138,12 +150,18 @@ func (r *Router) StartRoute(name string) {
 	}()
 }
 
+func (r *Router) StartAll() {
+	for name := range r.routes {
+		r.StartRoute(name)
+	}
+}
+
 func (r *Router) StopRoute(Id string) {
 	r.routes[Id].Stop()
 }
 
-func (r *Router) StartAll() {
+func (r *Router) StopAll() {
 	for name := range r.routes {
-		r.StartRoute(name)
+		r.StopRoute(name)
 	}
 }
