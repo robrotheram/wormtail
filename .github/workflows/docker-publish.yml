@@ -79,11 +79,16 @@ jobs:
       - name: "Git checkout"
         uses: "actions/checkout@v2"
 
+      - name: Set short git commit SHA
+        id: vars
+        run: |
+          calculatedSha=$(git rev-parse --short ${{ github.sha }})
+          echo "COMMIT_SHORT_SHA=$calculatedSha" >> $GITHUB_ENV
+
       - name: "Update Deployment Image Tag" # [3]
         working-directory: "manifests"
         run: |
-          kustomize edit set image app-image=${{steps.meta.outputs.tags}}
-          
+          kustomize edit set image app-image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}:sha-${{ env.COMMIT_SHORT_SHA }}
 
       - name: "Push Updated Image Tag" # [4]
         run: |
