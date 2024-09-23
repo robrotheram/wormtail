@@ -5,6 +5,8 @@ name: Create and publish a Docker image
 on:
   push:
     branches: ['main']
+    paths-ignore: 
+        - mainifests/**
 
 # Defines two custom environment variables for the workflow. These are used for the Container registry domain, and a name for the Docker image that this workflow builds.
 env:
@@ -17,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:
-      contents: read
+      contents: write
       packages: write
       attestations: write
       id-token: write
@@ -58,3 +60,27 @@ jobs:
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
       
+  update-manifest:
+    name: "Update Manifests"
+    needs: "build-and-push-image"
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: write
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - name: "Git checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Update Deployment Image Tag" # [3]
+        working-directory: "manifests"
+        run: |
+          kustomize edit set image app-image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}:${{ github.sha }}
+
+      - name: "Push Updated Image Tag" # [4]
+        run: |
+          git config --global user.name "@gjensidige-bot"
+          git config --global user.email "gjensidige-bot@users.noreply.github.com"
+          git commit -am "feat: Update deployment image tag to ${{ github.sha }} [skip ci]"
+          git push
