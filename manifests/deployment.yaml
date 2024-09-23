@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-app-container
+          image: app-image
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config # Change according to your app
+              subPath: config.yaml
+      volumes:
+        - name: config-volume
+          configMap:
+            name: my-app-configmap
+            items:
+              - key: config.yaml
+                path: config.yaml

@@ -1,0 +1,9 @@
+resources:
+  - deployment.yaml
+  - service.yaml
+  - configmap.yaml
+  - ingress.yaml
+images:
+- name: "app-image"
+  newName: "docker pull ghcr.io/robrotheram/wormtail"
+  newTag: "main"
