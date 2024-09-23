@@ -14,14 +14,13 @@ spec:
     spec:
       containers:
         - name: wormtail-container
-          image: iankoulski/tree
+          image: app-image
           ports:
             - containerPort: 8081
-          args: ["/app"]
           env:
             - name: CONFIG_PATH
               value: /app/config/config.yaml
-
+              
           volumeMounts:
             - name: config-volume
               mountPath: /app/config
