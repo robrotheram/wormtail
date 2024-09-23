@@ -17,6 +17,7 @@ spec:
           image: iankoulski/tree
           ports:
             - containerPort: 8081
+          args: ["/"]
           env:
             - name: CONFIG_PATH
               value: /app/config/config.yaml
