@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: wormtail-container
-          image: app-image
+          image: iankoulski/tree
           ports:
             - containerPort: 8081
           env:
