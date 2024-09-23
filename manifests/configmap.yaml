@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: my-app-configmap
+  name: wormtail-configmap
 data:
   config.yaml: |
     tailscale:
