@@ -5,10 +5,10 @@ resources:
 images:
 - name: app-image
   newName: ghcr.io/robrotheram/wormtail
-  newTag: sha-18646be
+  newTag: sha-1d2692a
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 configMapGenerator:
-  - name: wormtail-configmap
-    files:
-      - ../config.conf
+- files:
+  - ../config.conf
+  name: wormtail-configmap
