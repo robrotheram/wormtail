@@ -89,7 +89,7 @@ export const token = {
     remove: () => sessionStorage.removeItem('token')
 }
 
-const BASE_URL = "http://localhost:8081"
+const BASE_URL = ""
 const API_URL = `${BASE_URL}/api`
 const AUTH_URL = `${BASE_URL}/auth`
 
