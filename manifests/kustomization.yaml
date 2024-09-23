@@ -1,6 +1,7 @@
 resources:
 - deployment.yaml
 - service.yaml
+- configmap.yaml
 - ingress.yaml
 images:
 - name: app-image
@@ -8,7 +9,3 @@ images:
   newTag: sha-1d2692a
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-configMapGenerator:
-- files:
-  - ../config.conf
-  name: wormtail-configmap
