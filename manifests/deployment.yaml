@@ -1,30 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-app-deployment
+  name: wormtail-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: my-app
+      app: wormtail
   template:
     metadata:
       labels:
-        app: my-app
+        app: wormtail
     spec:
       containers:
-        - name: my-app-container
+        - name: wormtail-container
           image: app-image
           ports:
-            - containerPort: 8080
+            - containerPort: 8081
           volumeMounts:
             - name: config-volume
-              mountPath: /app/config # Change according to your app
-              subPath: config.yaml
+              mountPath: /config.yaml
       volumes:
         - name: config-volume
           configMap:
-            name: my-app-configmap
+            name: wormtail-configmap
             items:
               - key: config.yaml
                 path: config.yaml
