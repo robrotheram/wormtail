@@ -12,6 +12,7 @@ spec:
       labels:
         app: wormtail
     spec:
+      serviceAccountName: warptail
       containers:
         - name: wormtail-container
           image: app-image
