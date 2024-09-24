@@ -3,10 +3,10 @@ kind: Ingress
 metadata:
   name: wormtail-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.class: "traefik"  
 spec:
   rules:
-    - host: wormtail.example.com
+    - host: wormtail.exceptionerror.io
       http:
         paths:
           - path: /
