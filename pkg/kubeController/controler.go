@@ -18,6 +18,8 @@ import (
 	cmclientset "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 )
 
+const SecretName = "warptail-certificate"
+
 type K8Controller struct {
 	k8Client     *kubernetes.Clientset
 	cmclient     *cmclientset.Clientset
@@ -89,6 +91,17 @@ func NewK8Controller(cfg utils.K8Config) (*K8Controller, error) {
 	}, nil
 }
 
+// func getSecretName(host string) string {
+// 	host = strings.TrimSpace(host)
+// 	hostParts := strings.Split(host, ".")
+// 	if hostParts[0] == "www" {
+// 		host = hostParts[1]
+// 	} else {
+// 		host = hostParts[0]
+// 	}
+// 	return fmt.Sprintf("warptail-%s-certificate", host)
+// }
+
 func (ctrl *K8Controller) buildIngress(routes []utils.RouteConfig) networkingv1.Ingress {
 	ingress := networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
@@ -98,6 +111,7 @@ func (ctrl *K8Controller) buildIngress(routes []utils.RouteConfig) networkingv1.
 		Spec: networkingv1.IngressSpec{
 			IngressClassName: &ctrl.ingressClass,
 			Rules:            []networkingv1.IngressRule{},
+			TLS:              []networkingv1.IngressTLS{},
 		},
 	}
 
@@ -117,7 +131,7 @@ func (ctrl *K8Controller) buildIngress(routes []utils.RouteConfig) networkingv1.
 								Service: &networkingv1.IngressServiceBackend{
 									Name: ctrl.serviceName,
 									Port: networkingv1.ServiceBackendPort{
-										Number: 80, // Update with your service's port
+										Number: 80,
 									},
 								},
 							},
@@ -126,24 +140,29 @@ func (ctrl *K8Controller) buildIngress(routes []utils.RouteConfig) networkingv1.
 				},
 			},
 		}
+		tlsRule := networkingv1.IngressTLS{
+			Hosts:      []string{route.Name},
+			SecretName: SecretName,
+		}
 		ingress.Spec.Rules = append(ingress.Spec.Rules, rule)
+		ingress.Spec.TLS = append(ingress.Spec.TLS, tlsRule)
 	}
-	// TLS: []networkingv1.IngressTLS{
-	// 	{
-	// 		Hosts:      []string{host},
-	// 		SecretName: secretName, // The Secret that will be populated by cert-manager with the certificate
-	// 	},
-	// },
 	return ingress
 }
+func (ctrl *K8Controller) Update(routes []utils.RouteConfig) error {
+	if err := ctrl.createIngress(routes); err != nil {
+		return err
+	}
+	if err := ctrl.createCertificate(routes); err != nil {
+		return err
+	}
+	return nil
+}
 
-func (ctrl *K8Controller) CreateIngress(routes []utils.RouteConfig) error {
+func (ctrl *K8Controller) createIngress(routes []utils.RouteConfig) error {
 	ingress := ctrl.buildIngress(routes)
-
-	// Check if the Ingress already exists
 	existingIngress, err := ctrl.k8Client.NetworkingV1().Ingresses(ctrl.namespace).Get(context.TODO(), ctrl.ingressName, metav1.GetOptions{})
 	if err != nil {
-		// If the Ingress does not exist, create it
 		fmt.Println("Ingress does not exist, creating a new one...")
 		_, err := ctrl.k8Client.NetworkingV1().Ingresses(ctrl.namespace).Create(context.TODO(), &ingress, metav1.CreateOptions{})
 		if err != nil {
@@ -151,9 +170,7 @@ func (ctrl *K8Controller) CreateIngress(routes []utils.RouteConfig) error {
 		}
 		return nil
 	}
-	// If the Ingress exists, update it
 	fmt.Println("Ingress exists, updating it...")
-	existingIngress.ObjectMeta.Annotations = ingress.ObjectMeta.Annotations
 	existingIngress.Spec = ingress.Spec
 	_, err = ctrl.k8Client.NetworkingV1().Ingresses(ctrl.namespace).Update(context.TODO(), existingIngress, metav1.UpdateOptions{})
 	if err != nil {
@@ -162,29 +179,44 @@ func (ctrl *K8Controller) CreateIngress(routes []utils.RouteConfig) error {
 	return nil
 }
 
-// createCertificate creates a cert-manager Certificate resource
-func createCertificate(cmclient *cmclientset.Clientset, namespace string, certName string, secretName string, host string, issuerName string) (*certmanagerv1.Certificate, error) {
-	// Define the Certificate object
-	certificate := &certmanagerv1.Certificate{
+func (ctrl *K8Controller) buildCertificate(routes []utils.RouteConfig) certmanagerv1.Certificate {
+	DNSNames := []string{}
+	for _, route := range routes {
+		DNSNames = append(DNSNames, route.Name)
+	}
+
+	return certmanagerv1.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      certName,
-			Namespace: namespace,
+			Name:      fmt.Sprintf("%s-cert", ctrl.ingressName),
+			Namespace: ctrl.namespace,
 		},
 		Spec: certmanagerv1.CertificateSpec{
-			SecretName: secretName, // The Secret where cert-manager will store the certificate
-			DNSNames:   []string{host},
+			SecretName: SecretName,
+			DNSNames:   DNSNames,
 			IssuerRef: cmmeta.ObjectReference{
-				Name: issuerName,      // Name of the cert-manager Issuer or ClusterIssuer
-				Kind: "ClusterIssuer", // ClusterIssuer or Issuer depending on your setup
+				Name: "letsencrypt-prod",
+				Kind: "ClusterIssuer",
 			},
 		},
 	}
+}
 
-	// Create the Certificate resource
-	createdCert, err := cmclient.CertmanagerV1().Certificates(namespace).Create(context.TODO(), certificate, metav1.CreateOptions{})
+func (ctrl *K8Controller) createCertificate(routes []utils.RouteConfig) error {
+	certificate := ctrl.buildCertificate(routes)
+	existingCertificate, err := ctrl.cmclient.CertmanagerV1().Certificates(ctrl.namespace).Get(context.TODO(), fmt.Sprintf("%s-cert", ctrl.ingressName), metav1.GetOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to create Certificate: %v", err)
+		fmt.Println("Certficate does not exist, creating a new one...")
+		_, err := ctrl.cmclient.CertmanagerV1().Certificates(ctrl.namespace).Create(context.TODO(), &certificate, metav1.CreateOptions{})
+		if err != nil {
+			return fmt.Errorf("failed to create Certficate: %v", err)
+		}
+		return nil
 	}
-
-	return createdCert, nil
+	fmt.Println("Certficate exists, updating it...")
+	existingCertificate.Spec = certificate.Spec
+	_, err = ctrl.cmclient.CertmanagerV1().Certificates(ctrl.namespace).Update(context.TODO(), existingCertificate, metav1.UpdateOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to update Ingress: %v", err)
+	}
+	return nil
 }
