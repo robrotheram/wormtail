@@ -94,12 +94,10 @@ func (ctrl *K8Controller) buildIngress(routes []utils.RouteConfig) networkingv1.
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      ctrl.ingressName,
 			Namespace: ctrl.namespace,
-			Annotations: map[string]string{
-				"kubernetes.io/ingress.class": ctrl.ingressClass,
-			},
 		},
 		Spec: networkingv1.IngressSpec{
-			Rules: []networkingv1.IngressRule{},
+			IngressClassName: &ctrl.ingressClass,
+			Rules:            []networkingv1.IngressRule{},
 		},
 	}
 
