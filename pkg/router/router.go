@@ -129,7 +129,10 @@ func (r *Router) save() {
 		routes = append(routes, route.Config())
 	}
 	if r.ctrl != nil {
-		r.ctrl.CreateIngress(routes)
+		err := r.ctrl.CreateIngress(routes)
+		if err != nil {
+			log.Fatalf("K8 Controller Error: %v", err)
+		}
 	}
 	utils.SaveRoutes(routes)
 }

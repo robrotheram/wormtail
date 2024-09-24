@@ -10,3 +10,4 @@ images:
   newTag: sha-3394dc9
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+namespace: your-namespace
