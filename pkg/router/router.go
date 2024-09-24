@@ -2,7 +2,9 @@ package router
 
 import (
 	"fmt"
+	"log"
 	"sync"
+	"wormtail/pkg/kubeController"
 	"wormtail/pkg/utils"
 
 	"github.com/google/uuid"
@@ -29,6 +31,7 @@ type Route interface {
 type Router struct {
 	routes map[string]Route
 	ts     *tsnet.Server
+	ctrl   *kubeController.K8Controller
 	wg     sync.WaitGroup
 }
 
@@ -43,6 +46,15 @@ func NewRouter(config utils.Config) (*Router, error) {
 		routes: make(map[string]Route),
 		wg:     sync.WaitGroup{},
 	}
+
+	if !utils.IsEmptyStruct(config.K8Config) {
+		var err error
+		router.ctrl, err = kubeController.NewK8Controller(config.K8Config)
+		if err != nil {
+			log.Fatalf("K8 Controller Error: %v", err)
+		}
+	}
+
 	router.UpdateTailScale(config.Tailscale)
 	for _, route := range config.Routes {
 		router.AddRoute(route)
@@ -115,6 +127,9 @@ func (r *Router) save() {
 	routes := []utils.RouteConfig{}
 	for _, route := range r.routes {
 		routes = append(routes, route.Config())
+	}
+	if r.ctrl != nil {
+		r.ctrl.CreateIngress(routes)
 	}
 	utils.SaveRoutes(routes)
 }

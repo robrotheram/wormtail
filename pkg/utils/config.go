@@ -3,6 +3,7 @@ package utils
 import (
 	"log"
 	"os"
+	"reflect"
 
 	"gopkg.in/yaml.v2"
 )
@@ -41,9 +42,17 @@ type TailscaleConfig struct {
 	Hostname string `yaml:"hostnmae"`
 }
 
+type K8Config struct {
+	Namespace    string `yaml:"namespace"`
+	IngressName  string `yaml:"ingress_name"`
+	ServiceName  string `yaml:"service_name"`
+	IngressClass string `yaml:"ingress_class"`
+}
+
 type Config struct {
 	Tailscale TailscaleConfig `yaml:"tailscale"`
 	Dasboard  DashboardConfig `yaml:"dashboard"`
+	K8Config  K8Config        `yaml:"kubernetes,omitempty"`
 	Routes    []RouteConfig   `yaml:"routes"`
 }
 
@@ -79,4 +88,8 @@ func SaveRoutes(routes []RouteConfig) {
 	config := LoadConfig()
 	config.Routes = routes
 	Save(config)
+}
+
+func IsEmptyStruct(s interface{}) bool {
+	return reflect.DeepEqual(s, reflect.Zero(reflect.TypeOf(s)).Interface())
 }

@@ -1,6 +1,6 @@
 import { Button } from "./components/ui/button"
 import { SheetTrigger, SheetContent, Sheet } from "./components/ui/sheet"
-import { LayoutGridIcon, MenuIcon, NetworkIcon, SettingsIcon } from "./Icons"
+import { MenuIcon, NetworkIcon, SettingsIcon } from "./Icons"
 import { Link } from "@tanstack/react-router"
 import React from "react"
 
@@ -14,7 +14,7 @@ const Links = [
   {
     to: "/routes",
     label: "Routes",
-    icon: LayoutGridIcon,
+    icon: NetworkIcon,
     className: "h-5 w-5"
   },
   {
@@ -28,7 +28,7 @@ const Links = [
 
 
 export const HeaderNav = () => {
-  return <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+  return <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background sm:static sm:h-auto sm:border-0 sm:bg-transparent">
     <Sheet>
       <SheetTrigger asChild>
         <Button size="icon" variant="outline" className="sm:hidden">
@@ -36,11 +36,14 @@ export const HeaderNav = () => {
           <span className="sr-only">Toggle Menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="sm:max-w-xs">
-        <nav className="grid gap-6 text-lg font-medium">
-          <Link to="/" className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base">
-            <NetworkIcon className="h-5 w-5 transition-all group-hover:scale-110" />
+      <SheetContent side="left" className="">
+        <div className="w-full">
+          <Link to="/" className="group w-full flex items-center justify-left gap-4 rounded-full">
+            <img src="/logo.png" className="h-14 w-14 transition-all" />
+            <h1 className="text-2xl">WarpTail</h1>
           </Link>
+        </div>
+        <nav className="grid gap-6 text-lg font-medium py-6">
           {Links.map((link: LinksProps) => <Link key={link.to} to={link.to} className="flex items-center gap-4 px-2.5 text-foreground">
             {link.icon({ className: link.className })}
             <span className="sr-only">{link.label}</span>
@@ -54,15 +57,15 @@ export const HeaderNav = () => {
 export const SideNav = () => {
   return <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
     <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
-      <Link to="/" className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base">
-          <NetworkIcon className="h-4 w-4 transition-all group-hover:scale-110" />
-          <span className="sr-only">Load Balancer</span>
+      <Link to="/" className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full">
+        <img src="/logo.png" className="h-full w-full transition-all group-hover:scale-110" />
+        <span className="sr-only">Load Balancer</span>
       </Link>
-      {Links.map((link: LinksProps) => 
+      {Links.map((link: LinksProps) =>
         <Link key={link.to} to={link.to} className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base">
-        {link.icon({ className: link.className })}
-        <span className="sr-only">{link.label}</span>
-      </Link>)}
+          {link.icon({ className: link.className })}
+          <span className="sr-only">{link.label}</span>
+        </Link>)}
     </nav>
   </aside>
 }

@@ -217,6 +217,7 @@ func (api *api) handleUpdateTailscaleSettings(w http.ResponseWriter, r *http.Req
 
 	config := utils.LoadConfig()
 	config.Tailscale = tsc
+	api.UpdateTailScale(tsc)
 	utils.Save(config)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(config.Tailscale)

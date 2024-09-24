@@ -36,8 +36,9 @@ export const LoginPage: React.FC = () => {
   
     return (
       <Card className="col-span-2 m-10">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Router Dashboard Login</CardTitle>
+        <CardHeader className="pb-2 flex flex-row items-center gap-4">
+          <img src='/logo.png' className='w-20'/>
+          <CardTitle className="text-3xl">WarpTail Login</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className='flex flex-col space-y-4'>

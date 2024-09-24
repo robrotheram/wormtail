@@ -1,3 +1,5 @@
+export const isDev = !!import.meta.env.DEV;
+
 export enum RouterStatus {
     STARTING = "Starting",
     RUNNING = "Running",
@@ -89,7 +91,10 @@ export const token = {
     remove: () => sessionStorage.removeItem('token')
 }
 
-const BASE_URL = ""
+let BASE_URL = ""
+if (isDev){
+    BASE_URL="http://localhost:8081"
+}
 const API_URL = `${BASE_URL}/api`
 const AUTH_URL = `${BASE_URL}/auth`
 
