@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"wormtail/pkg/utils"
 
+	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -102,6 +103,55 @@ func NewK8Controller(cfg utils.K8Config) (*K8Controller, error) {
 // 	return fmt.Sprintf("warptail-%s-certificate", host)
 // }
 
+func (ctrl *K8Controller) buildService(routes []utils.RouteConfig) corev1.Service {
+	service := corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      ctrl.ingressName,
+			Namespace: ctrl.namespace,
+		},
+		Spec: corev1.ServiceSpec{
+			Type: corev1.ServiceTypeNodePort,
+			Selector: map[string]string{
+				"app": "wormtail",
+			},
+			Ports: []corev1.ServicePort{},
+		},
+	}
+
+	for _, route := range routes {
+		if route.Type == utils.TCP || route.Type == utils.UDP {
+			continue
+		}
+		port := corev1.ServicePort{
+			Port:     int32(route.Port),
+			NodePort: int32(route.Port),
+		}
+
+		service.Spec.Ports = append(service.Spec.Ports, port)
+	}
+	return service
+}
+
+func (ctrl *K8Controller) createService(routes []utils.RouteConfig) error {
+	service := ctrl.buildService(routes)
+	existingService, err := ctrl.k8Client.CoreV1().Services(ctrl.namespace).Get(context.TODO(), ctrl.ingressName, metav1.GetOptions{})
+	if err != nil {
+		fmt.Println("Service does not exist, creating a new one...")
+		_, err := ctrl.k8Client.CoreV1().Services(ctrl.namespace).Create(context.TODO(), &service, metav1.CreateOptions{})
+		if err != nil {
+			return fmt.Errorf("failed to create Service: %v", err)
+		}
+		return nil
+	}
+	fmt.Println("Service exists, updating it...")
+	existingService.Spec = service.Spec
+	_, err = ctrl.k8Client.CoreV1().Services(ctrl.namespace).Update(context.TODO(), existingService, metav1.UpdateOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to update Service: %v", err)
+	}
+	return nil
+}
+
 func (ctrl *K8Controller) buildIngress(routes []utils.RouteConfig) networkingv1.Ingress {
 	ingress := networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
@@ -150,6 +200,9 @@ func (ctrl *K8Controller) buildIngress(routes []utils.RouteConfig) networkingv1.
 	return ingress
 }
 func (ctrl *K8Controller) Update(routes []utils.RouteConfig) error {
+	if err := ctrl.createService(routes); err != nil {
+		return err
+	}
 	if err := ctrl.createIngress(routes); err != nil {
 		return err
 	}

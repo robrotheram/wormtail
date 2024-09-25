@@ -47,12 +47,12 @@ const TailScaleForm = ({ config }: TailScaleFormProps) => {
         <CardContent>
             <div className="grid grid-cols-2 gap-2">
                 <div>
-                    <Label htmlFor="APIKey">Tailscale API Key</Label>
+                    <Label htmlFor="AuthKey">Tailscale API Key</Label>
                     <Input
-                        id="APIKey"
-                        name="APIKey"
+                        id="AuthKey"
+                        name="AuthKey"
                         type="password"
-                        value={editMode ? editedRoute.APIKey : config.APIKey}
+                        value={editMode ? editedRoute.AuthKey : config.AuthKey}
                         onChange={handleInputChange}
                         disabled={!editMode}
                     />

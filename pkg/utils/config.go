@@ -38,7 +38,7 @@ type DashboardConfig struct {
 }
 
 type TailscaleConfig struct {
-	APIKey   string `yaml:"api_key"`
+	AuthKey  string `yaml:"auth_key"`
 	Hostname string `yaml:"hostnmae"`
 }
 

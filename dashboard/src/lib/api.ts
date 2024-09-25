@@ -35,7 +35,7 @@ export interface Machine {
 
 
 export interface Tailsale {
-    APIKey: string
+    AuthKey: string
     Hostname: string
 }
 

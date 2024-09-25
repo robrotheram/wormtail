@@ -68,7 +68,7 @@ func (r *Router) UpdateTailScale(config utils.TailscaleConfig) {
 		r.Close()
 	}
 	r.ts = new(tsnet.Server)
-	r.ts.AuthKey = config.APIKey
+	r.ts.AuthKey = config.AuthKey
 	r.ts.Hostname = config.Hostname
 }
 
