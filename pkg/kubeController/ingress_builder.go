@@ -64,7 +64,7 @@ func (ctrl *K8Controller) getIngress() (*networkingv1.Ingress, error) {
 }
 
 func (ctrl *K8Controller) deleteIngress() error {
-	if ingress, _ := ctrl.getIngress(); ingress == nil {
+	if _, err := ctrl.getIngress(); err == nil {
 		return nil
 	}
 	return ctrl.k8Client.NetworkingV1().Ingresses(ctrl.namespace).Delete(context.TODO(), INGRESS_NAME, metav1.DeleteOptions{})
