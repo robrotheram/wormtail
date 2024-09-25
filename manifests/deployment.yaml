@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wormtail-deployment
+  name: warptail-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: wormtail
+      app: warptail
   template:
     metadata:
       labels:
-        app: wormtail
+        app: warptail
     spec:
       serviceAccountName: warptail
       containers:
-        - name: wormtail-container
+        - name: warptail-container
           image: app-image
           ports:
             - containerPort: 8081
@@ -28,7 +28,7 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: wormtail-configmap
+            name: warptail-configmap
             items:
               - key: config.yaml
                 path: config.yaml

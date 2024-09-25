@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 	"sync"
-	"wormtail/pkg/kubeController"
-	"wormtail/pkg/utils"
+	"warptail/pkg/kubeController"
+	"warptail/pkg/utils"
 
 	"github.com/google/uuid"
 	"tailscale.com/tsnet"

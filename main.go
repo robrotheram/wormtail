@@ -3,9 +3,9 @@ package main
 
 import (
 	"log"
-	"wormtail/pkg/api"
-	"wormtail/pkg/router"
-	"wormtail/pkg/utils"
+	"warptail/pkg/api"
+	"warptail/pkg/router"
+	"warptail/pkg/utils"
 )
 
 func main() {

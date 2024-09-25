@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"wormtail/pkg/utils"
+	"warptail/pkg/utils"
 
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -112,7 +112,7 @@ func (ctrl *K8Controller) buildService(routes []utils.RouteConfig) corev1.Servic
 		Spec: corev1.ServiceSpec{
 			Type: corev1.ServiceTypeNodePort,
 			Selector: map[string]string{
-				"app": "wormtail",
+				"app": "warptail",
 			},
 			Ports: []corev1.ServicePort{},
 		},

@@ -49,7 +49,7 @@ WarpTail uses a `config.yaml` file for all configuration management. The configu
 ```yaml
 tailscale:
   auth_key: tskey-auth-XXXXXXXXXXXXXXXXXXXXXXXXXXX
-  hostname: WORMTAIL
+  hostname: warptail
 
 dashboard:
   enabled: true
@@ -77,9 +77,9 @@ routes:
       
 # Optional Kubernetes-specific configuration
 kubernetes:
-  namespace: wormtail
+  namespace: warptail
   ingress_name: warptail-routes
-  service_name: wormtail-service
+  service_name: warptail-service
   ingress_class: traefik
 
 

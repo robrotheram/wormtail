@@ -1,4 +1,4 @@
-module wormtail
+module warptail
 
 go 1.22.0
 

@@ -7,8 +7,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"wormtail/pkg/router"
-	"wormtail/pkg/utils"
+	"warptail/pkg/router"
+	"warptail/pkg/utils"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

@@ -1,18 +1,18 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: wormtail-ingress
+  name: warptail-ingress
   annotations:
     kubernetes.io/ingress.class: "traefik"  
 spec:
   rules:
-    - host: wormtail.exceptionerror.io
+    - host: warptail.exceptionerror.io
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: wormtail-service
+                name: warptail-service
                 port:
                   number: 80

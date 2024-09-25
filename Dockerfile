@@ -14,7 +14,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build
 
 
 FROM scratch
-LABEL org.opencontainers.image.source="https://github.com/robrotheram/wormtail"
+LABEL org.opencontainers.image.source="https://github.com/robrotheram/warptail"
 COPY --from=ui_builder /dashboard/dist /dashboard/dist
-COPY --from=go_builder /server/wormtail /go/bin/wormtail
-ENTRYPOINT ["/go/bin/wormtail"]
+COPY --from=go_builder /server/warptail /go/bin/warptail
+ENTRYPOINT ["/go/bin/warptail"]

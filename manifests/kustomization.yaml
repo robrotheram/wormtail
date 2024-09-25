@@ -6,8 +6,8 @@ resources:
 - rbac.yaml
 images:
 - name: app-image
-  newName: ghcr.io/robrotheram/wormtail
-  newTag: sha-8b3d50a
+  newName: ghcr.io/robrotheram/warptail
+  newTag: sha-566790b
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: your-namespace

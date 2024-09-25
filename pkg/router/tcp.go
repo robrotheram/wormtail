@@ -8,7 +8,7 @@ import (
 	"log/slog"
 	"net"
 	"time"
-	"wormtail/pkg/utils"
+	"warptail/pkg/utils"
 
 	"tailscale.com/client/tailscale"
 )
