@@ -1,6 +1,23 @@
+![]()
+
+<p align="center"> 
+  <img  src="dashboard/public/android-chrome-192x192.png" width="200" />
+</p>
+
+
 # WarpTail
 
 WarpTail is a tool designed to simplify proxying connections from the internet to services hosted on your Tailscale tailnet. It offers secure and seamless access to private services on your tailnet using proxy techniques and supports both Docker and Kubernetes environments.
+
+## Features
+- Easy setup to expose services from your Tailscale tailnet to the internet.
+- YAML-based configuration for flexibility.
+- Dynamic port routing and management.
+- Built-in dashboard for monitoring and control.
+- Automated ingress management and traffic routing in Kubernetes.
+
+
+## Diagram
 
 ```mermaid
 flowchart LR;
@@ -17,13 +34,6 @@ direction direction LR
     D-.-> I[Private Service];
 end
 ```
-
-## Features
-- Easy setup to expose services from your Tailscale tailnet to the internet.
-- YAML-based configuration for flexibility.
-- Dynamic port routing and management.
-- Built-in dashboard for monitoring and control.
-- Automated ingress management and traffic routing in Kubernetes.
 ---
 
 ## Getting Started
