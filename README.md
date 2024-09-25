@@ -2,13 +2,28 @@
 
 WarpTail is a tool designed to simplify proxying connections from the internet to services hosted on your Tailscale tailnet. It offers secure and seamless access to private services on your tailnet using proxy techniques and supports both Docker and Kubernetes environments.
 
+```mermaid
+flowchart LR;
+A[Internet] -->|Inbound Traffic| B[WarpTail Proxy];
+
+subgraph Public Deployment
+direction RL
+        B -.->C[Tailscale Tailnet];
+    
+end
+subgraph Internal Deployment
+direction direction LR
+    C == Wireguard tunnel  ==> D[Tailscale Tailnet]
+    D-.-> I[Private Service];
+end
+```
+
 ## Features
 - Easy setup to expose services from your Tailscale tailnet to the internet.
 - YAML-based configuration for flexibility.
 - Dynamic port routing and management.
 - Built-in dashboard for monitoring and control.
 - Automated ingress management and traffic routing in Kubernetes.
-
 ---
 
 ## Getting Started
@@ -67,7 +82,7 @@ kubernetes:
 - **`dashboard.enabled`**: Enables or disables the WarpTail dashboard.
 - **`dashboard.username`** / **`dashboard.password`**: Credentials for accessing the WarpTail dashboard.
 - **`kubernetes`**: Kubernetes-specific settings for managing ingress, services, and routing.
-- **`routes`**: Define the services within your tailnet that you want to expose. Each route specifies a domain name, the protocol (`http` or `https`), and the internal machine's IP address and port.
+- **`routes`**: Define the services within your tailnet that you want to expose. Each route specifies a domain name, the protocol (`http`, `tcp`, `udp`), and the internal machine's IP address and port.
 
 ---
 
@@ -82,6 +97,7 @@ In this mode, you must specify all the ports you wish to proxy. Make sure your `
 ```bash
 docker run -d \
   --name warptail \
+  -e CONFIG_PATH=/app/config.yaml \
   -v /path/to/config.yaml:/app/config.yaml \
   -p 80:80 \
   -p 443:443 \
@@ -100,6 +116,7 @@ For dynamic port management, you can run WarpTail with Docker's host networking:
 docker run -d \
   --name warptail \
   --network host \
+  -e CONFIG_PATH=/app/config.yaml \
   -v /path/to/config.yaml:/app/config.yaml \
   warptail:latest
 ```
@@ -114,122 +131,10 @@ WarpTail manages its own ingress and routes traffic through node-ports in Kubern
 
 ### 1. Setup Service Account
 
-Create a service account, role, and role binding:
+See `manifests` folder for example kubernetes manifiests
 
-```yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: warptail-sa
-  namespace: default
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: warptail-role
-rules:
-  - apiGroups: [""]
-    resources: ["services", "pods"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  - apiGroups: ["networking.k8s.io"]
-    resources: ["ingresses"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: warptail-binding
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: warptail-role
-subjects:
-  - kind: ServiceAccount
-    name: warptail-sa
-    namespace: default
-```
 
-### 2. Deploy WarpTail
-
-Deploy WarpTail using your `config.yaml` file:
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: warptail
-  namespace: default
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: warptail
-  template:
-    metadata:
-      labels:
-        app: warptail
-    spec:
-      serviceAccountName: warptail-sa
-      containers:
-        - name: warptail
-          image: warptail:latest
-          volumeMounts:
-            - name: config-volume
-              mountPath: /app/config.yaml
-              subPath: config.yaml
-      volumes:
-        - name: config-volume
-          configMap:
-            name: warptail-config
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: warptail-config
-  namespace: default
-data:
-  config.yaml: |
-    tailscale:
-      auth_key: tskey-auth-XXXXXXXXXXXXXXXXXXXXXXXXXXX
-      hostname: WORMTAIL
-    dashboard:
-      enabled: true
-      username: admin
-      password: mallard
-    kubernetes: 
-      namespace: wormtail
-      ingress_name: warptail-routes
-      service_name: wormtail-service
-      ingress_class: traefik
-    routes:
-      - enabled: true
-        name: immich.exceptionerror.io
-        type: http
-        machine:
-          address: 192.168.0.104
-          port: 30041
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: wormtail-service
-  namespace: default
-spec:
-  type: NodePort
-  selector:
-    app: warptail
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 80
-      nodePort: 30080
-    - protocol: TCP
-      port: 443
-      targetPort: 443
-      nodePort: 30443
-```
-
-### 3. Accessing the Service
+### 2. Accessing the Service
 
 Once deployed, WarpTail will automatically configure ingress and route traffic through node-ports. Access your exposed services through your Kubernetes cluster's external IP using the node-port (e.g., `http://<cluster-ip>:30080` for HTTP).
 
