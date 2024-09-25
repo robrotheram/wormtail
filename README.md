@@ -1,7 +1,5 @@
-![]()
-
 <p align="center"> 
-  <img  src="dashboard/public/android-chrome-192x192.png" width="200" />
+  <img  src="dashboard/public/logo.png" width="200" />
 </p>
 
 
