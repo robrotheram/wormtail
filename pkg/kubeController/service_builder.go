@@ -7,6 +7,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 const SERVICE_NAME = "warptail-route-service"
@@ -31,8 +32,8 @@ func (ctrl *K8Controller) buildService(routes []utils.RouteConfig) corev1.Servic
 			continue
 		}
 		port := corev1.ServicePort{
-			Port:     int32(route.Port),
-			NodePort: int32(route.Port),
+			Port:       int32(route.Port),
+			TargetPort: intstr.FromInt(route.Port),
 		}
 		service.Spec.Ports = append(service.Spec.Ports, port)
 	}
