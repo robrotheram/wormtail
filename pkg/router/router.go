@@ -131,10 +131,7 @@ func (r *Router) save() {
 		routes = append(routes, route.Config())
 	}
 	if r.ctrl != nil {
-		err := r.ctrl.Update(routes)
-		if err != nil {
-			log.Printf("K8 Controller Error: %v", err)
-		}
+		r.ctrl.Update(routes)
 	}
 	utils.SaveRoutes(routes)
 }
