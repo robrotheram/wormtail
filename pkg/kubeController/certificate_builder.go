@@ -38,7 +38,7 @@ func (ctrl *K8Controller) getCertificate() (*certmanagerv1.Certificate, error) {
 }
 
 func (ctrl *K8Controller) deleteCertificate() error {
-	if cert, _ := ctrl.getCertificate(); cert == nil {
+	if _, err := ctrl.getCertificate(); err == nil {
 		return nil
 	}
 	return ctrl.cmclient.CertmanagerV1().Certificates(ctrl.namespace).Delete(context.TODO(), CERT_NAME, metav1.DeleteOptions{})

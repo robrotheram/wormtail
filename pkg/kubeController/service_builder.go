@@ -44,7 +44,7 @@ func (ctrl *K8Controller) getService() (*corev1.Service, error) {
 }
 
 func (ctrl *K8Controller) deleteService() error {
-	if service, _ := ctrl.getService(); service == nil {
+	if _, err := ctrl.getService(); err == nil {
 		return nil
 	}
 	return ctrl.k8Client.CoreV1().Services(ctrl.namespace).Delete(context.TODO(), SERVICE_NAME, metav1.DeleteOptions{})
