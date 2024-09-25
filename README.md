@@ -110,7 +110,7 @@ docker run -d \
   -p 80:80 \
   -p 443:443 \
   -p 30041:30041 \
-  warptail:latest
+  ghcr.io/robrotheram/warptail:latest
 ```
 
 - Mount the `config.yaml` file using `-v /path/to/config.yaml:/app/config.yaml`.
@@ -126,7 +126,7 @@ docker run -d \
   --network host \
   -e CONFIG_PATH=/app/config.yaml \
   -v /path/to/config.yaml:/app/config.yaml \
-  warptail:latest
+  ghcr.io/robrotheram/warptail:latest
 ```
 
 Host networking allows WarpTail to dynamically route traffic without needing to expose individual ports.

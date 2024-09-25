@@ -14,7 +14,11 @@ RUN CGO_ENABLED=0 GOOS=linux go build
 
 
 FROM scratch
+LABEL org.opencontainers.image.title=warptail
 LABEL org.opencontainers.image.source="https://github.com/robrotheram/warptail"
+LABEL org.opencontainers.image.description='Tailscale network proxy'
+LABEL org.opencontainers.image.documentation='https://github.com/robrotheram/warptail'
+LABEL org.opencontainers.image.authors='robrotheram'
 COPY --from=ui_builder /dashboard/dist /dashboard/dist
 COPY --from=go_builder /server/warptail /go/bin/warptail
 ENTRYPOINT ["/go/bin/warptail"]
