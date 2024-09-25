@@ -84,8 +84,10 @@ func (r *Router) AddRoute(config utils.RouteConfig) (Route, error) {
 	}
 	client, _ := r.ts.LocalClient()
 	switch config.Type {
+	case utils.UDP:
+		r.routes[config.Id] = NewNetworkRoute(config, client)
 	case utils.TCP:
-		r.routes[config.Id] = NewTCPRoute(config, client)
+		r.routes[config.Id] = NewNetworkRoute(config, client)
 	case utils.HTTP:
 		r.routes[config.Id] = NewHTTPRoute(config, r.ts)
 	default:
@@ -120,7 +122,7 @@ func (r *Router) GetRouteByName(name string) (Route, error) {
 			return route, nil
 		}
 	}
-	return &TCPRoute{}, fmt.Errorf("no route found")
+	return nil, fmt.Errorf("no route found")
 }
 
 func (r *Router) save() {
@@ -131,7 +133,7 @@ func (r *Router) save() {
 	if r.ctrl != nil {
 		err := r.ctrl.Update(routes)
 		if err != nil {
-			log.Fatalf("K8 Controller Error: %v", err)
+			log.Printf("K8 Controller Error: %v", err)
 		}
 	}
 	utils.SaveRoutes(routes)

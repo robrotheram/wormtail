@@ -13,7 +13,7 @@ import (
 	"tailscale.com/client/tailscale"
 )
 
-type TCPRoute struct {
+type NetworkRoute struct {
 	config   utils.RouteConfig
 	status   RouterStatus
 	client   *tailscale.LocalClient
@@ -23,8 +23,8 @@ type TCPRoute struct {
 	errsig   chan bool
 }
 
-func NewTCPRoute(config utils.RouteConfig, client *tailscale.LocalClient) *TCPRoute {
-	return &TCPRoute{
+func NewNetworkRoute(config utils.RouteConfig, client *tailscale.LocalClient) *NetworkRoute {
+	return &NetworkRoute{
 		config: config,
 		data:   utils.NewTimeSeries(time.Second, 1000),
 		status: STOPPED,
@@ -34,31 +34,31 @@ func NewTCPRoute(config utils.RouteConfig, client *tailscale.LocalClient) *TCPRo
 	}
 }
 
-func (route *TCPRoute) Status() RouterStatus {
+func (route *NetworkRoute) Status() RouterStatus {
 	return route.status
 }
 
-func (route *TCPRoute) Config() utils.RouteConfig {
+func (route *NetworkRoute) Config() utils.RouteConfig {
 	return route.config
 }
 
-func (route *TCPRoute) Stats() utils.TimeSeriesData {
+func (route *NetworkRoute) Stats() utils.TimeSeriesData {
 	return route.data.Data
 }
 
-func (route *TCPRoute) Update(config utils.RouteConfig) error {
+func (route *NetworkRoute) Update(config utils.RouteConfig) error {
 	route.Stop()
 	route.config = config
 	return route.Start()
 }
 
-func (route *TCPRoute) Stop() error {
+func (route *NetworkRoute) Stop() error {
 	route.listener.Close()
 	route.status = STOPPED
 	return nil
 }
 
-func (route *TCPRoute) Start() error {
+func (route *NetworkRoute) Start() error {
 	route.status = STARTING
 	slog.Info(fmt.Sprintf("listening on tcp://localhost:%d", route.config.Port))
 	laddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf(":%d", route.config.Port))
@@ -83,9 +83,9 @@ func (route *TCPRoute) Start() error {
 	}
 }
 
-func (route *TCPRoute) handle(src io.Reader, dst io.Writer) {
+func (route *NetworkRoute) handle(src io.Reader, dst io.Writer) {
 	var err error
-	proxy, err := route.client.DialTCP(context.Background(), route.config.Machine.Address, route.config.Machine.Port)
+	proxy, err := route.client.UserDial(context.Background(), string(route.config.Type), route.config.Machine.Address, route.config.Machine.Port)
 	if err != nil {
 		log.Printf("remote connection failed: %v", err)
 		return
@@ -96,7 +96,7 @@ func (route *TCPRoute) handle(src io.Reader, dst io.Writer) {
 	<-route.errsig
 }
 
-func (route *TCPRoute) send(src io.Reader, dst io.Writer) {
+func (route *NetworkRoute) send(src io.Reader, dst io.Writer) {
 	buff := make([]byte, 0xffff)
 	for {
 		data := route.pipe(src, dst, buff)
@@ -104,7 +104,7 @@ func (route *TCPRoute) send(src io.Reader, dst io.Writer) {
 	}
 }
 
-func (route *TCPRoute) receive(src io.Reader, dst io.Writer) {
+func (route *NetworkRoute) receive(src io.Reader, dst io.Writer) {
 	buff := make([]byte, 0xffff)
 	for {
 		data := route.pipe(src, dst, buff)
@@ -112,7 +112,7 @@ func (route *TCPRoute) receive(src io.Reader, dst io.Writer) {
 	}
 }
 
-func (route *TCPRoute) pipe(src io.Reader, dst io.Writer, buff []byte) uint64 {
+func (route *NetworkRoute) pipe(src io.Reader, dst io.Writer, buff []byte) uint64 {
 	n, err := src.Read(buff)
 	if err != nil {
 		route.err("Read failed '%s'\n", err)
@@ -127,7 +127,7 @@ func (route *TCPRoute) pipe(src io.Reader, dst io.Writer, buff []byte) uint64 {
 	return uint64(n)
 }
 
-func (route *TCPRoute) err(s string, err error) {
+func (route *NetworkRoute) err(s string, err error) {
 	log.Println(s, err)
 	if route.erred {
 		return

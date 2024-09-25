@@ -110,7 +110,7 @@ func (ctrl *K8Controller) buildService(routes []utils.RouteConfig) corev1.Servic
 			Namespace: ctrl.namespace,
 		},
 		Spec: corev1.ServiceSpec{
-			Type: corev1.ServiceTypeNodePort,
+			Type: corev1.ServiceTypeLoadBalancer,
 			Selector: map[string]string{
 				"app": "warptail",
 			},
@@ -119,7 +119,7 @@ func (ctrl *K8Controller) buildService(routes []utils.RouteConfig) corev1.Servic
 	}
 
 	for _, route := range routes {
-		if route.Type == utils.TCP || route.Type == utils.UDP {
+		if route.Type != utils.TCP && route.Type != utils.UDP {
 			continue
 		}
 		port := corev1.ServicePort{
