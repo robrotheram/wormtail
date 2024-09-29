@@ -2,8 +2,9 @@ package router
 
 import (
 	"fmt"
-	"io"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"strconv"
 	"time"
 	"warptail/pkg/utils"
@@ -52,32 +53,12 @@ func (route *HTTPRoute) Stats() utils.TimeSeriesData {
 	return route.data.Data
 }
 
-func (route *HTTPRoute) copyHeader(dst, src http.Header) {
-	for k, vv := range src {
-		for _, v := range vv {
-			dst.Add(k, v)
-		}
-	}
-}
-
-func parseRequestSize(r *http.Request) (int64, error) {
-	contentLength := r.Header.Get("Content-Length")
+func parseRequestSize(header http.Header) (int64, error) {
+	contentLength := header.Get("Content-Length")
 	if contentLength == "" {
 		return 0, nil
 	}
 	return strconv.ParseInt(contentLength, 10, 64)
-}
-
-type customWriter struct {
-	w     io.Writer
-	total int64 // Keeps track of the total number of bytes written
-}
-
-// Write implements the io.Writer interface.
-func (cw *customWriter) Write(p []byte) (int, error) {
-	n, err := cw.w.Write(p)
-	cw.total += int64(n) // Add the number of bytes written to the total
-	return n, err
 }
 
 func (route *HTTPRoute) Handle(w http.ResponseWriter, r *http.Request) {
@@ -86,30 +67,20 @@ func (route *HTTPRoute) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if size, err := parseRequestSize(r); err == nil {
+	url, err := url.Parse(fmt.Sprintf("http://%s:%d", route.config.Machine.Address, route.config.Machine.Port))
+	proxy := httputil.NewSingleHostReverseProxy(url)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadGateway)
+		return
+	}
+
+	if size, err := parseRequestSize(r.Header); err == nil {
 		route.data.LogRecived(uint64(size))
 	}
 
-	r.URL.Host = fmt.Sprintf("%s:%d", route.config.Machine.Address, route.config.Machine.Port)
-	r.URL.Scheme = "http"
-	r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
-	r.Host = route.config.Machine.Address
-	r.RequestURI = ""
-
-	route.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		return http.ErrUseLastResponse
+	proxy.ServeHTTP(w, r)
+	if size, err := parseRequestSize(w.Header()); err == nil {
+		route.data.LogSent(uint64(size))
 	}
-
-	resp, err := route.Do(r)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-
-	cw := &customWriter{w: w}
-
-	route.copyHeader(w.Header(), resp.Header)
-	w.WriteHeader(resp.StatusCode)
-	io.Copy(cw, resp.Body)
-	route.data.LogSent(uint64(cw.total))
 }

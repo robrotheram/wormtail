@@ -25,7 +25,7 @@ import {
 } from 'lucide-react'
 import { getRoute, RouterStatus, startRoute, stopRoute } from '../../lib/api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { formatBytes, formatXAxis } from '@/lib/utils'
+import { formatBytes, formatXAxis, getLast10MinutesData } from '@/lib/utils'
 import { RouteCardProps, RouteDetailCard } from '@/RouteCard'
 import ProtectedRoute from '@/Protected'
 
@@ -47,6 +47,8 @@ const RouteFormComponent = () => {
 
 
   const route = data
+  const timeSeries = getLast10MinutesData(route.Stats.Points)
+  console.log(timeSeries)
   return (
     <div className="container mx-auto p-2 space-y-6">
       <h1 className="text-2xl font-bold mb-6">Route: {route.Name}</h1>
@@ -70,10 +72,10 @@ const RouteFormComponent = () => {
               {formatBytes(route.Stats.Total.Received)}
             </p>
           </div>
-          {route.Stats.Points.length > 0 &&
+          {timeSeries.length > 0 &&
             <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={route.Stats.Points}>
-                <CartesianGrid strokeDasharray="3 3" />
+              <LineChart data={timeSeries}>
+                <CartesianGrid strokeDasharray="2" />
                 <XAxis
                   dataKey="Timestamp"
                   tickFormatter={formatXAxis}
@@ -91,12 +93,14 @@ const RouteFormComponent = () => {
                   dataKey="Value.Sent"
                   stroke="#8884d8"
                   name="Sent"
+                  dot={false}
                 />
                 <Line
                   type="monotone"
                   dataKey="Value.Received"
                   stroke="#82ca9d"
                   name="Received"
+                  dot={false}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -110,9 +114,6 @@ const RouteFormComponent = () => {
 
 
 const RouteStatusCard = ({ route }: RouteCardProps) => {
-  if (!route) {
-    return
-  }
   const queryClient = useQueryClient()
   const update = useMutation({
     mutationFn: route?.Status === RouterStatus.RUNNING ? stopRoute : startRoute,
@@ -120,6 +121,9 @@ const RouteStatusCard = ({ route }: RouteCardProps) => {
       queryClient.setQueryData(['route', { id: route?.Id }], { ...route, Status: route?.Status === RouterStatus.RUNNING ? RouterStatus.STOPPED : RouterStatus.RUNNING })
     },
   })
+  if (!route) {
+    return
+  }
   const toggleStatus = () => {
     update.mutate(route?.Id)
   }

@@ -12,10 +12,6 @@ export enum RouterType {
     UDP = "udp",
 }
 
-export interface ProxyStats {
-    Sent: number;
-    Received: number;
-}
 
 export interface Route {
     Id: string;
@@ -39,11 +35,17 @@ export interface Tailsale {
     Hostname: string
 }
 
+export interface ProxyStats {
+    Sent: number;
+    Received: number;
+}
+
+export interface TimeSeriesPoint {
+    Timestamp: Date
+    Value: ProxyStats
+}
 export interface TimeSeries {
-    Points: {
-        Timestamp: Date
-        Value: ProxyStats
-    }[]
+    Points: TimeSeriesPoint[]
     Total: ProxyStats
 }
 

@@ -1,8 +1,10 @@
+import { LogOut } from "lucide-react"
 import { Button } from "./components/ui/button"
 import { SheetTrigger, SheetContent, Sheet } from "./components/ui/sheet"
 import { MenuIcon, NetworkIcon, SettingsIcon } from "./Icons"
-import { Link } from "@tanstack/react-router"
+import { Link, useNavigate } from "@tanstack/react-router"
 import React from "react"
+import { useAuth } from "./AuthContext"
 
 interface LinksProps {
   to: string;
@@ -28,6 +30,14 @@ const Links = [
 
 
 export const HeaderNav = () => {
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+  const handleLogout = () => {
+    logout();
+    navigate({ to: '/' })
+  }
+
+
   return <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background sm:static sm:h-auto sm:border-0 sm:bg-transparent">
     <Sheet>
       <SheetTrigger asChild>
@@ -49,13 +59,25 @@ export const HeaderNav = () => {
             <span className="sr-only">{link.label}</span>
             {link.label}
           </Link>)}
+          <button onClick={()=>handleLogout()} className="flex items-center gap-4 px-2.5 text-foreground">
+          <LogOut className="h-5 w-5" />
+          Logout
+          </button>
         </nav>
+        
       </SheetContent>
     </Sheet>
   </header>
 }
 export const SideNav = () => {
-  return <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+  const handleLogout = () => {
+    logout();
+    navigate({ to: '/' })
+  }
+
+  return <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex justify-between">
     <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
       <Link to="/" className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full">
         <img src="/logo.png" className="h-full w-full transition-all group-hover:scale-110" />
@@ -67,5 +89,10 @@ export const SideNav = () => {
           <span className="sr-only">{link.label}</span>
         </Link>)}
     </nav>
+    <footer className="flex flex-col items-center gap-4 px-2 sm:py-5">
+      <button onClick={()=>handleLogout()} className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base">
+        <LogOut className="h-5 w-5" />
+      </button>
+    </footer>
   </aside>
 }

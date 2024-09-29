@@ -16,6 +16,7 @@ type RouterStatus string
 const (
 	STARTING = RouterStatus("Starting")
 	RUNNING  = RouterStatus("Running")
+	STOPPING = RouterStatus("Stopping")
 	STOPPED  = RouterStatus("Stopped")
 )
 
@@ -163,7 +164,10 @@ func (r *Router) StartRoute(name string) {
 	r.wg.Add(1)
 	go func() {
 		defer r.wg.Done()
-		r.routes[name].Start()
+		err := r.routes[name].Start()
+		if err != nil {
+			log.Println(err)
+		}
 	}()
 }
 
