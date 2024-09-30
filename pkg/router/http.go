@@ -69,6 +69,7 @@ func (route *HTTPRoute) Handle(w http.ResponseWriter, r *http.Request) {
 
 	url, err := url.Parse(fmt.Sprintf("http://%s:%d", route.config.Machine.Address, route.config.Machine.Port))
 	proxy := httputil.NewSingleHostReverseProxy(url)
+	proxy.Transport = route.Transport
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
